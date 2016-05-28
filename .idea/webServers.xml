@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="b1993656-8131-4654-8b34-9feca0740b29" name="1" url="http://localhost">
+        <fileTransfer port="0" mountedRoot="C:\Program Files (x86)\JetBrains\IntelliJ IDEA 2016.1.1\plugins\activate-power-mode-master\activate-power-mode-master" accessType="MOUNT" />
+      </webServer>
+    </option>
+  </component>
+</project>
