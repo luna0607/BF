@@ -44,10 +44,10 @@ public class ClientRunner {
 	private void test(){
 		try {
 
-		System.out.println(remoteHelper.getUserService().login("admin", "123456a"));
-			System.out.println(remoteHelper.getIOService().writeFile("2", "admin", "testFile","123"));
-			System.out.println(remoteHelper.getIOService().readFileFullName());
-			System.out.println("ftyjhngmk");
+		System.out.println(remoteHelper.getUserService().login("admin", "123456"));
+			System.out.println(remoteHelper.getIOService().writeFile("2", "admin", "testFile","time"));
+				System.out.println(remoteHelper.getIOService().readFileFullName().size());
+
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}

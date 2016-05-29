@@ -5,16 +5,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import javax.swing.*;
 import javax.swing.plaf.FontUIResource;
 import java.text.SimpleDateFormat;
 import  java.util.*;
 
-import com.sun.org.apache.bcel.internal.generic.RETURN;
 import rmi.RemoteHelper;
 
 public class MainFrame extends JFrame {
@@ -29,8 +25,10 @@ public class MainFrame extends JFrame {
 				UIManager.put(key, fontRes);
 			}
 		}}
+    private String name;
+    private  String projectName;
 	private String userId;
-private Date now=new Date();
+    private Date now=new Date();
 	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd/HH/mm/ss");
 	private String time= dateFormat.format( now );
 	private JTextArea textArea=new JTextArea();
@@ -39,8 +37,9 @@ private Date now=new Date();
 	private JLabel label2=new JLabel();
 	private JTextField textField=new JTextField();
 	private JTextField textField2=new JTextField();
+	JMenu openMenuItem ;
 	private JFrame frame = new JFrame("BF Client");
-  //  private ArrayList<String> fileFullName=RemoteHelper.getInstance().getIOService().readFileFullName();
+    private ArrayList<String> fileFullName=RemoteHelper.getInstance().getIOService().readFileFullName();
 
 	public MainFrame() throws InterruptedException, RemoteException {
 		System.out.println(time);
@@ -58,8 +57,6 @@ private Date now=new Date();
 					label2.setBounds(frame.getWidth()/2,frame.getHeight()/2,frame.getWidth()/2,frame.getHeight()/40);
 					textField.setBounds(0, (21*frame.getHeight()/40), frame.getWidth()/2, 3*frame.getHeight()/10);
 					textField2.setBounds(frame.getWidth()/2, (21*frame.getHeight()/40), frame.getWidth()/2, 3*frame.getHeight()/10);
-				//	label1.setFont(new Font("Tempus Sans ITC",Font.PLAIN,26));
-					//label2.setFont(new Font("Tempus Sans ITC",Font.PLAIN,26));
 				}
 			}
 
@@ -72,12 +69,8 @@ private Date now=new Date();
 
 		JMenuItem newMenuItem = new JMenuItem("New");
 		fileMenu.add(newMenuItem);
-		JMenuItem openMenuItem = new JMenuItem("Open");
-        ArrayList<String > projectNameArraylist;
-		projectNameArraylist = new ArrayList<>();
-		for (int i = 0; i <projectNameArraylist.size(); i++) {
-            openMenuItem.add(new JMenuItem(projectNameArraylist.get(i)));
-        }
+		openMenuItem = new JMenu("Open");
+
         fileMenu.add(openMenuItem);
 		JMenuItem saveMenuItem = new JMenuItem("Save");
 		fileMenu.add(saveMenuItem);
@@ -95,19 +88,7 @@ private Date now=new Date();
 		JMenuItem runMenuItem=new JMenuItem("Run");
 		runMenu.add(runMenuItem);
 		runMenuItem.addActionListener(new MenuItemActionListener());
-		
-		JMenu versionMenu=new JMenu("Version");
-		menuBar.add(versionMenu);
-		JMenuItem versionOne=new JMenuItem("version1.0");
-		versionMenu.add(versionOne);
-		versionOne.addActionListener(new MenuItemActionListener());
-		JMenuItem versionTwo=new JMenuItem("version2.0");
-		versionMenu.add(versionTwo);
-		versionTwo.addActionListener(new MenuItemActionListener());
-		JMenuItem versionThree=new JMenuItem("version3.0");
-		versionMenu.add(versionThree);
-		versionThree.addActionListener(new MenuItemActionListener());
-		
+
 		JMenu accountMenu=new JMenu("Account");
 		menuBar.add(accountMenu);
 		JMenuItem login=new JMenuItem("Login");
@@ -158,27 +139,54 @@ private Date now=new Date();
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
-			if (cmd.equals("Open")) {
-				try {
-					ArrayList<String> fileFullName=RemoteHelper.getInstance().getIOService().readFileFullName();
-					int barNumbers=projectName(fileFullName).size();
-					textArea.setText("Open");
-				} catch (RemoteException e1) {
-					e1.printStackTrace();
-				}
+            for(int i=0;i<projectName(fileFullName).size();i++){
+                if(cmd.equals(projectName(fileFullName).get(i))){
+                    projectName=projectName(fileFullName).get(i);
+                    try {
+                        String code=RemoteHelper.getInstance().getIOService().readFile(userId, Versions(projectName,fileFullName)
+                                        .get(newstVersion(Versions(projectName,fileFullName))));
+                        textArea.setText(code);
+                    } catch (RemoteException e1) {
+                        e1.printStackTrace();
+                    }
+                    JMenu versionMenu=new JMenu("Version");
+                    menuBar.add(versionMenu);
+                    ArrayList<String > versionNameArraylist;
+                    versionNameArraylist=Versions(projectName,fileFullName);
+                    for (int j = 0; j <versionNameArraylist.size(); j++) {
+                      versionMenu.add(new JMenuItem(versionNameArraylist.get(j)));
+                        new JMenuItem(versionNameArraylist.get(j)).addActionListener(new MenuItemActionListener());
+                    }
+                    for (int j = 0; j <versionNameArraylist.size(); j++) {
+                    if(cmd.equals(versionNameArraylist.get(j))){
+                        try {
+                            String code=RemoteHelper.getInstance().getIOService().readFile(userId, versionNameArraylist.get(j));
+                            textArea.setText(code);
+                        } catch (RemoteException e1) {
+                            e1.printStackTrace();
+                        }
+                    }}
+                }
+            }
 
-			}else if (cmd.equals("New")) {
+if(cmd.equals("Open")){
+	ArrayList<String > projectNameArraylist;
+	projectNameArraylist=projectName(fileFullName);
+	for (int i = 0; i <projectNameArraylist.size(); i++) {
+		openMenuItem.add(new JMenuItem(projectNameArraylist.get(i)));
+	}
+}
+             if (cmd.equals("New")) {
 				if(userId!= null &&userId.length()>0){
-					String name= JOptionPane.showInputDialog("Please give a name");
+					 name= JOptionPane.showInputDialog("Please give a name");
 					try {
 						RemoteHelper.getInstance().getIOService().writeFile("", userId, name,time);
 					} catch (RemoteException e1) {
 						e1.printStackTrace();
 					}}
-				else{
-loginWarning();
+				else{loginWarning();
 				}
-				textField2.setText("New");
+				textField2.setText("Have already create a document.");
 			} else if (cmd.equals("Run")) {
 				textField2.setText("Hello, result");
 			}else if(cmd.equals("Exit")){
@@ -266,25 +274,29 @@ loginWarning();
 	}
 
 	class SaveActionListener implements ActionListener {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			String code = textArea.getText();
-			if(userId!= null&&(userId.length()>0)){
-			try {
-				RemoteHelper.getInstance().getIOService().writeFile(code, userId, "code",time);
-			} catch (RemoteException e1) {
-				e1.printStackTrace();
-			}}
-			else{
-				loginWarning();
-			}
-		}
-	}
-
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String code = textArea.getText();
+            if (userId != null && (userId.length() > 0)) {
+                if (name != null && name.length() > 0) {
+                    try {
+                        RemoteHelper.getInstance().getIOService().writeFile(code, userId, name, time);
+                    } catch (RemoteException e1) {
+                        e1.printStackTrace();
+                    }
+                } else {
+                    name= JOptionPane.showInputDialog("Please give a name");
+                }
+            }
+            else{
+                loginWarning();
+            }
+        }
+    }
 	private void loginWarning(){
 		JFrame thirdFrame=new JFrame();
 		JLabel newLabel=new JLabel();
-		newLabel.setText("            Please login first.");
+		newLabel.setText(" Please login.");
 		thirdFrame.setResizable(false);
 		thirdFrame.setLayout(new BorderLayout());
 		thirdFrame.add(newLabel,BorderLayout.CENTER);
@@ -297,19 +309,27 @@ loginWarning();
 	 * @return projectName
      */
     private ArrayList<String> projectName(ArrayList<String> fileFullName){
-	ArrayList<String> list=new ArrayList<>();
-	boolean isHere=false;
-	for(String a:fileFullName){
-		String[] s1=a.split("_");
-		for (String aList : list) {
-			isHere = aList.equals(s1[1]);
-		}
-		if(!isHere){
-			list.add(s1[1]);
-		}
-	}
-	return  list;
-}
+        ArrayList<String> list=new ArrayList<>();
+        ArrayList<String> userFile=new ArrayList<>();
+        boolean isHere=false;
+        for(String b:fileFullName){
+            if(userId!= null &&userId.length()>0) {
+                if(b.contains(userId)){
+                    userFile.add(b);
+                    for(String a:userFile){
+                        String[] s1=a.split("_");
+                        for (String aList : list) {
+                            isHere = aList.equals(s1[1]);
+                        }
+                        if(!isHere){
+                            list.add(s1[1]);
+                        }
+                    }}}
+                else
+                    loginWarning();
+            }
+        return  list;
+        }
 
 	/**
 	 * 参数是fileFullName
